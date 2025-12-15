@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave & OD Approval System - API Testing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            background: white;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .endpoint-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        button[type="submit"] {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        button[type="submit"]:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .response-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .response-section h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: #fde8e8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .success {
+            color: #27ae60;
+            background: #e8f8f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info-box p {
+            color: #1976d2;
+            margin: 5px 0;
+        }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Leave & OD Approval System</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'student')">Student</button>
+            <button class="tab-button" onclick="openTab(event, 'authority')">Authority</button>
+            <button class="tab-button" onclick="openTab(event, 'status')">Check Status</button>
+        </div>
+        
+        <!-- STUDENT TAB -->
+        <div id="student" class="tab-content active">
+            <div class="endpoint-section">
+                <h3>📤 Submit Leave Request with Image</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> POST /api/student/{studentId}/leave-request/upload</p>
+                </div>
+                <form id="uploadForm" onsubmit="submitWithImage(event)">
+                    <div class="form-group">
+                        <label for="studentId1">Student ID:</label>
+                        <input type="number" id="studentId1" required placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="leaveType1">Leave Type:</label>
+                        <select id="leaveType1" required>
+                            <option value="">Select Type</option>
+                            <option value="OD">OD (On Duty)</option>
+                            <option value="ML">ML (Medical Leave)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="imageFile">Upload Leave Letter Image:</label>
+                        <input type="file" id="imageFile" accept="image/*,.pdf" required>
+                    </div>
+                    <button type="submit">Submit Request</button>
+                    <div class="loader" id="loader1"></div>
+                </form>
+                <div id="response1" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText1"></pre>
+                </div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>✍️ Submit Leave Request with Message</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> POST /api/student/{studentId}/leave-request/message</p>
+                </div>
+                <form id="messageForm" onsubmit="submitWithMessage(event)">
+                    <div class="form-group">
+                        <label for="studentId2">Student ID:</label>
+                        <input type="number" id="studentId2" required placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="leaveType2">Leave Type:</label>
+                        <select id="leaveType2" required>
+                            <option value="">Select Type</option>
+                            <option value="OD">OD (On Duty)</option>
+                            <option value="ML">ML (Medical Leave)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="leaveMessage">Leave Request Message:</label>
+                        <textarea id="leaveMessage" required placeholder="I am requesting leave from [date] to [date] due to [reason]..."></textarea>
+                    </div>
+                    <button type="submit">Submit Request</button>
+                    <div class="loader" id="loader2"></div>
+                </form>
+                <div id="response2" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText2"></pre>
+                </div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>📋 Get All My Requests</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> GET /api/student/{studentId}/leave-requests</p>
+                </div>
+                <form id="getRequestsForm" onsubmit="getStudentRequests(event)">
+                    <div class="form-group">
+                        <label for="studentId3">Student ID:</label>
+                        <input type="number" id="studentId3" required placeholder="e.g., 1">
+                    </div>
+                    <button type="submit">Get My Requests</button>
+                    <div class="loader" id="loader3"></div>
+                </form>
+                <div id="response3" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText3"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AUTHORITY TAB -->
+        <div id="authority" class="tab-content">
+            <div class="endpoint-section">
+                <h3>📥 Get Pending Requests</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> GET /api/authority/{approverId}/pending-requests</p>
+                </div>
+                <form id="pendingForm" onsubmit="getPendingRequests(event)">
+                    <div class="form-group">
+                        <label for="approverId1">Authority ID:</label>
+                        <input type="number" id="approverId1" required placeholder="e.g., 2">
+                    </div>
+                    <button type="submit">Get Pending Requests</button>
+                    <div class="loader" id="loader4"></div>
+                </form>
+                <div id="response4" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText4"></pre>
+                </div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>✅ Approve/Reject Request</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> POST /api/authority/{approverId}/request/{requestId}/approve</p>
+                </div>
+                <form id="approveForm" onsubmit="processApproval(event)">
+                    <div class="form-group">
+                        <label for="approverId2">Authority ID:</label>
+                        <input type="number" id="approverId2" required placeholder="e.g., 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="requestId1">Request ID:</label>
+                        <input type="number" id="requestId1" required placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="decision">Decision:</label>
+                        <select id="decision" required>
+                            <option value="">Select Decision</option>
+                            <option value="APPROVED">APPROVED</option>
+                            <option value="REJECTED">REJECTED</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="remarks">Remarks:</label>
+                        <textarea id="remarks" placeholder="Enter your remarks..."></textarea>
+                    </div>
+                    <button type="submit">Submit Decision</button>
+                    <div class="loader" id="loader5"></div>
+                </form>
+                <div id="response5" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText5"></pre>
+                </div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>❓ Raise Query</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> POST /api/authority/{approverId}/request/{requestId}/query</p>
+                </div>
+                <form id="queryForm" onsubmit="raiseQuery(event)">
+                    <div class="form-group">
+                        <label for="approverId3">Authority ID:</label>
+                        <input type="number" id="approverId3" required placeholder="e.g., 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="requestId2">Request ID:</label>
+                        <input type="number" id="requestId2" required placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="queryMessage">Query Message:</label>
+                        <textarea id="queryMessage" required placeholder="Please provide medical certificate..."></textarea>
+                    </div>
+                    <button type="submit">Raise Query</button>
+                    <div class="loader" id="loader6"></div>
+                </form>
+                <div id="response6" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText6"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- STATUS TAB -->
+        <div id="status" class="tab-content">
+            <div class="endpoint-section">
+                <h3>🔍 Check Request Status (Real-time)</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> GET /api/student/request/{requestId}/status</p>
+                    <p>This will show the current approval stage and all approval steps</p>
+                </div>
+                <form id="statusForm" onsubmit="getRequestStatus(event)">
+                    <div class="form-group">
+                        <label for="requestId3">Request ID:</label>
+                        <input type="number" id="requestId3" required placeholder="e.g., 1">
+                    </div>
+                    <button type="submit">Check Status</button>
+                    <button type="button" onclick="startAutoRefresh()" style="margin-left: 10px; background: #27ae60;">
+                        Enable Auto-Refresh (5s)
+                    </button>
+                    <button type="button" onclick="stopAutoRefresh()" style="margin-left: 10px; background: #e74c3c;">
+                        Stop Auto-Refresh
+                    </button>
+                    <div class="loader" id="loader7"></div>
+                </form>
+                <div id="response7" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText7"></pre>
+                </div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>✔️ Resolve Query</h3>
+                <div class="info-box">
+                    <p><strong>Endpoint:</strong> POST /api/student/query/{queryId}/resolve</p>
+                </div>
+                <form id="resolveForm" onsubmit="resolveQuery(event)">
+                    <div class="form-group">
+                        <label for="queryId">Query ID:</label>
+                        <input type="number" id="queryId" required placeholder="e.g., 1">
+                    </div>
+                    <button type="submit">Resolve Query</button>
+                    <div class="loader" id="loader8"></div>
+                </form>
+                <div id="response8" class="response-section" style="display:none;">
+                    <h4>Response:</h4>
+                    <pre id="responseText8"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const BASE_URL = 'http://localhost:8080/api';
+        let autoRefreshInterval = null;
+        
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+        
+        function showLoader(loaderId) {
+            document.getElementById(loaderId).style.display = 'block';
+        }
+        
+        function hideLoader(loaderId) {
+            document.getElementById(loaderId).style.display = 'none';
+        }
+        
+        function showResponse(responseId, textId, data, isError = false) {
+            const responseDiv = document.getElementById(responseId);
+            const responseText = document.getElementById(textId);
+            
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response-section ' + (isError ? 'error' : 'success');
+            responseText.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        async function submitWithImage(event) {
+            event.preventDefault();
+            showLoader('loader1');
+            
+            const studentId = document.getElementById('studentId1').value;
+            const leaveType = document.getElementById('leaveType1').value;
+            const file = document.getElementById('imageFile').files[0];
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', leaveType);
+            
+            try {
+                const response = await fetch(`${BASE_URL}/student/${studentId}/leave-request/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                hideLoader('loader1');
+                showResponse('response1', 'responseText1', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader1');
+                showResponse('response1', 'responseText1', { error: error.message }, true);
+            }
+        }
+        
+        async function submitWithMessage(event) {
+            event.preventDefault();
+            showLoader('loader2');
+            
+            const studentId = document.getElementById('studentId2').value;
+            const leaveType = document.getElementById('leaveType2').value;
+            const message = document.getElementById('leaveMessage').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/student/${studentId}/leave-request/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: leaveType, message: message })
+                });
+                
+                const data = await response.json();
+                hideLoader('loader2');
+                showResponse('response2', 'responseText2', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader2');
+                showResponse('response2', 'responseText2', { error: error.message }, true);
+            }
+        }
+        
+        async function getStudentRequests(event) {
+            event.preventDefault();
+            showLoader('loader3');
+            
+            const studentId = document.getElementById('studentId3').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/student/${studentId}/leave-requests`);
+                const data = await response.json();
+                hideLoader('loader3');
+                showResponse('response3', 'responseText3', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader3');
+                showResponse('response3', 'responseText3', { error: error.message }, true);
+            }
+        }
+        
+        async function getPendingRequests(event) {
+            event.preventDefault();
+            showLoader('loader4');
+            
+            const approverId = document.getElementById('approverId1').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/authority/${approverId}/pending-requests`);
+                const data = await response.json();
+                hideLoader('loader4');
+                showResponse('response4', 'responseText4', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader4');
+                showResponse('response4', 'responseText4', { error: error.message }, true);
+            }
+        }
+        
+        async function processApproval(event) {
+            event.preventDefault();
+            showLoader('loader5');
+            
+            const approverId = document.getElementById('approverId2').value;
+            const requestId = document.getElementById('requestId1').value;
+            const decision = document.getElementById('decision').value;
+            const remarks = document.getElementById('remarks').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/authority/${approverId}/request/${requestId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ decision: decision, remarks: remarks })
+                });
+                
+                const data = await response.json();
+                hideLoader('loader5');
+                showResponse('response5', 'responseText5', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader5');
+                showResponse('response5', 'responseText5', { error: error.message }, true);
+            }
+        }
+        
+        async function raiseQuery(event) {
+            event.preventDefault();
+            showLoader('loader6');
+            
+            const approverId = document.getElementById('approverId3').value;
+            const requestId = document.getElementById('requestId2').value;
+            const message = document.getElementById('queryMessage').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/authority/${approverId}/request/${requestId}/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                hideLoader('loader6');
+                showResponse('response6', 'responseText6', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader6');
+                showResponse('response6', 'responseText6', { error: error.message }, true);
+            }
+        }
+        
+        async function getRequestStatus(event) {
+            if (event) event.preventDefault();
+            showLoader('loader7');
+            
+            const requestId = document.getElementById('requestId3').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/student/request/${requestId}/status`);
+                const data = await response.json();
+                hideLoader('loader7');
+                showResponse('response7', 'responseText7', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader7');
+                showResponse('response7', 'responseText7', { error: error.message }, true);
+            }
+        }
+        
+        async function resolveQuery(event) {
+            event.preventDefault();
+            showLoader('loader8');
+            
+            const queryId = document.getElementById('queryId').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/student/query/${queryId}/resolve`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                hideLoader('loader8');
+                showResponse('response8', 'responseText8', data, !response.ok);
+            } catch (error) {
+                hideLoader('loader8');
+                showResponse('response8', 'responseText8', { error: error.message }, true);
+            }
+        }
+        
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                alert('Auto-refresh is already running!');
+                return;
+            }
+            
+            const requestId = document.getElementById('requestId3').value;
+            if (!requestId) {
+                alert('Please enter a Request ID first!');
+                return;
+            }
+            
+            autoRefreshInterval = setInterval(() => {
+                getRequestStatus(null);
+            }, 5000);
+            
+            alert('Auto-refresh enabled! Status will update every 5 seconds.');
+        }
+        
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                alert('Auto-refresh stopped.');
+            } else {
+                alert('Auto-refresh is not running.');
+            }
+        }
+    </script>
+</body>
+</html>

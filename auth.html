@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Approval System - Login & Register</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .form-container {
+            padding: 40px 30px;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .student-fields {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .student-fields.show {
+            display: block;
+        }
+        
+        .student-fields h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .user-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .user-info h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .user-info p {
+            margin: 5px 0;
+            color: #333;
+        }
+        
+        .link-button {
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .link-button:hover {
+            text-decoration: underline;
+        }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 SRMASD</h1>
+            <p>Leave & OD Approval System</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">Login</div>
+            <div class="tab" onclick="switchTab('register')">Register</div>
+        </div>
+        
+        <div class="form-container">
+            <!-- LOGIN FORM -->
+            <div id="loginForm" class="form-section active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginEmail">Institutional Email</label>
+                        <input type="email" id="loginEmail" required placeholder="your.name@srmist.edu.in">
+                    </div>
+                    
+                    <button type="submit">Login</button>
+                    <div class="loader" id="loginLoader"></div>
+                </form>
+                
+                <div id="loginResponse" class="response"></div>
+            </div>
+            
+            <!-- REGISTER FORM -->
+            <div id="registerForm" class="form-section">
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerName">Full Name</label>
+                        <input type="text" id="registerName" required placeholder="John Doe">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerEmail">Institutional Email</label>
+                        <input type="email" id="registerEmail" required placeholder="your.name@srmist.edu.in">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerRole">Role</label>
+                        <select id="registerRole" required onchange="toggleStudentFields()">
+                            <option value="">Select Role</option>
+                            <option value="STUDENT">Student</option>
+                            <option value="FACULTY_ADVISOR">Faculty Advisor</option>
+                            <option value="YEAR_COORDINATOR">Year Coordinator</option>
+                            <option value="HOD">Head of Department</option>
+                        </select>
+                    </div>
+                    
+                    <div id="studentFields" class="student-fields">
+                        <h4>Student Details</h4>
+                        
+                        <div class="form-group">
+                            <label for="rollNo">Roll Number</label>
+                            <input type="text" id="rollNo" placeholder="RA2111003010001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="department">Department</label>
+                            <select id="department">
+                                <option value="">Select Department</option>
+                                <option value="CSE">Computer Science & Engineering</option>
+                                <option value="ECE">Electronics & Communication</option>
+                                <option value="EEE">Electrical & Electronics</option>
+                                <option value="MECH">Mechanical Engineering</option>
+                                <option value="CIVIL">Civil Engineering</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="year">Year</label>
+                                <select id="year">
+                                    <option value="">Year</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="semester">Semester</label>
+                                <select id="semester">
+                                    <option value="">Sem</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="section">Section</label>
+                            <input type="text" id="section" placeholder="A">
+                        </div>
+                    </div>
+                    
+                    <button type="submit">Register</button>
+                    <div class="loader" id="registerLoader"></div>
+                </form>
+                
+                <div id="registerResponse" class="response"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const BASE_URL = 'http://localhost:8080/api';
+        
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            document.getElementById(tab + 'Form').classList.add('active');
+            
+            // Clear responses
+            document.querySelectorAll('.response').forEach(r => {
+                r.style.display = 'none';
+                r.className = 'response';
+            });
+        }
+        
+        function toggleStudentFields() {
+            const role = document.getElementById('registerRole').value;
+            const studentFields = document.getElementById('studentFields');
+            
+            if (role === 'STUDENT') {
+                studentFields.classList.add('show');
+                // Make student fields required
+                document.getElementById('rollNo').required = true;
+                document.getElementById('department').required = true;
+                document.getElementById('year').required = true;
+                document.getElementById('semester').required = true;
+                document.getElementById('section').required = true;
+            } else {
+                studentFields.classList.remove('show');
+                // Remove required from student fields
+                document.getElementById('rollNo').required = false;
+                document.getElementById('department').required = false;
+                document.getElementById('year').required = false;
+                document.getElementById('semester').required = false;
+                document.getElementById('section').required = false;
+            }
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const loader = document.getElementById('loginLoader');
+            const response = document.getElementById('loginResponse');
+            
+            loader.style.display = 'block';
+            response.style.display = 'none';
+            
+            const email = document.getElementById('loginEmail').value;
+            
+            try {
+                const res = await fetch(`${BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await res.json();
+                loader.style.display = 'none';
+                
+                if (res.ok) {
+                    response.className = 'response success';
+                    response.innerHTML = `
+                        <h4>✅ Login Successful!</h4>
+                        <div class="user-info">
+                            <p><strong>User ID:</strong> ${data.userId}</p>
+                            <p><strong>Name:</strong> ${data.name}</p>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Role:</strong> ${data.role}</p>
+                            ${data.studentId ? `
+                                <p><strong>Student ID:</strong> ${data.studentId}</p>
+                                <p><strong>Roll No:</strong> ${data.rollNo}</p>
+                                <p><strong>Department:</strong> ${data.department}</p>
+                                <p><strong>Year:</strong> ${data.year} | Section: ${data.section}</p>
+                            ` : ''}
+                        </div>
+                        <p style="margin-top: 15px; text-align: center;">
+                            <strong>Save your User ID: ${data.userId}</strong><br>
+                            <small>You'll need this to use the API</small>
+                        </p>
+                    `;
+                    response.style.display = 'block';
+                    
+                    // Store in localStorage for convenience
+                    localStorage.setItem('currentUser', JSON.stringify(data));
+                    
+                    // Redirect to testing page after 2 seconds
+                    setTimeout(() => {
+                        if (confirm('Redirect to API testing page?')) {
+                            window.location.href = 'index.html';
+                        }
+                    }, 2000);
+                } else {
+                    response.className = 'response error';
+                    response.textContent = data;
+                    response.style.display = 'block';
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                response.className = 'response error';
+                response.textContent = 'Error: ' + error.message;
+                response.style.display = 'block';
+            }
+        }
+        
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const loader = document.getElementById('registerLoader');
+            const response = document.getElementById('registerResponse');
+            
+            loader.style.display = 'block';
+            response.style.display = 'none';
+            
+            const role = document.getElementById('registerRole').value;
+            const registrationData = {
+                name: document.getElementById('registerName').value,
+                email: document.getElementById('registerEmail').value,
+                role: role
+            };
+            
+            // Add student-specific fields if role is STUDENT
+            if (role === 'STUDENT') {
+                registrationData.rollNo = document.getElementById('rollNo').value;
+                registrationData.department = document.getElementById('department').value;
+                registrationData.year = parseInt(document.getElementById('year').value);
+                registrationData.section = document.getElementById('section').value;
+                registrationData.semester = parseInt(document.getElementById('semester').value);
+            }
+            
+            try {
+                const res = await fetch(`${BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registrationData)
+                });
+                
+                const data = await res.json();
+                loader.style.display = 'none';
+                
+                if (res.ok) {
+                    response.className = 'response success';
+                    response.innerHTML = `
+                        <h4>✅ Registration Successful!</h4>
+                        <div class="user-info">
+                            <p><strong>User ID:</strong> ${data.userId}</p>
+                            <p><strong>Name:</strong> ${data.name}</p>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Role:</strong> ${data.role}</p>
+                            ${data.studentId ? `
+                                <p><strong>Student ID:</strong> ${data.studentId}</p>
+                                <p><strong>Roll No:</strong> ${data.rollNo}</p>
+                                <p><strong>Department:</strong> ${data.department}</p>
+                                <p><strong>Year:</strong> ${data.year} | Section: ${data.section}</p>
+                            ` : ''}
+                        </div>
+                        <p style="margin-top: 15px; text-align: center;">
+                            <strong>Save your IDs!</strong><br>
+                            <small>User ID: ${data.userId}${data.studentId ? ` | Student ID: ${data.studentId}` : ''}</small>
+                        </p>
+                    `;
+                    response.style.display = 'block';
+                    
+                    // Store in localStorage
+                    localStorage.setItem('currentUser', JSON.stringify(data));
+                    
+                    // Auto-switch to login tab after 3 seconds
+                    setTimeout(() => {
+                        if (confirm('Redirect to API testing page?')) {
+                            window.location.href = 'index.html';
+                        }
+                    }, 2000);
+                } else {
+                    response.className = 'response error';
+                    response.textContent = data;
+                    response.style.display = 'block';
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                response.className = 'response error';
+                response.textContent = 'Error: ' + error.message;
+                response.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
